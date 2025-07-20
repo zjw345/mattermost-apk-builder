@@ -2,7 +2,7 @@
 
 #------------------------------------------------------------------------------
 
-MATTERMOST_MOBILE_GIT_URL="https://github.com/mattermost/mattermost-mobile.git"
+MATTERMOST_MOBILE_GIT_URL="https://github.com/zjw345/mattermost-mobile.git"
 
 CONF_PATH="/conf"
 DATA_PATH="/data"
