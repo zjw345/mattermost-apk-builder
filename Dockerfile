@@ -1,78 +1,59 @@
-FROM            ruby:3.2.2-slim
+FROM ruby:3.2.2-slim
 
-ENV             ANDROID_COMMAND_LINE_TOOLS_URL="https://dl.google.com/android/repository/commandlinetools-linux-6200805_latest.zip"
-ENV             ANDROID_HOME="/opt/android/sdk"
-ENV             ANDROID_ACCEPT_LICENSE="yes"
-ENV             ANDROID_PLATFORM_VERSION="31"
-ENV             DEBIAN_FRONTEND="noninteractive"
-ENV             LANG="en_US.UTF-8"
-ENV             LANGUAGE="en_US.UTF-8"
-ENV             PATH=$PATH:/home/builder/.local/share/gem/ruby/3.2.0/bin:/opt/android/sdk/platform-tools:/opt/android/tools/bin
+ENV ANDROID_COMMAND_LINE_TOOLS_URL="https://dl.google.com/android/repository/commandlinetools-linux-6200805_latest.zip" \
+    ANDROID_HOME="/opt/android/sdk" \
+    ANDROID_ACCEPT_LICENSE="yes" \
+    ANDROID_PLATFORM_VERSION="31" \
+    DEBIAN_FRONTEND="noninteractive" \
+    LANG="en_US.UTF-8" \
+    LANGUAGE="en_US.UTF-8" \
+    PATH=$PATH:/opt/android/sdk/platform-tools:/opt/android/tools/bin
 
-RUN             mkdir -p "/usr/share/man/man1" && \
-                apt-get update --fix-missing && \
-                apt-get -y upgrade && \
-                apt-get install -y \
-                apt-transport-https \
-                build-essential \
-                default-jdk-headless \
-                curl \
-                git \
-                python3 \
-                unzip \
-                usbutils \
-                vim
+# 基础依赖
+RUN mkdir -p /usr/share/man/man1 \
+ && apt-get update --fix-missing \
+ && apt-get -y upgrade \
+ && apt-get install -y \
+      apt-transport-https \
+      build-essential \
+      default-jdk-headless \
+      curl \
+      git \
+      python3 \
+      unzip \
+      usbutils \
+      vim
 
-# 更新后的部分 - 替代原来的Node.js安装
-RUN curl -fsSL "https://deb.nodesource.com/setup_20.x" | bash - && \
-    apt-get install -y nodejs
+# 安装 Node.js 20.x
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+ && apt-get install -y nodejs
 
-RUN             npm -g install react-native-cli
+# 全局安装 react-native-cli
+RUN npm install -g react-native-cli
 
+# 创建挂载目录并开放权限
+RUN mkdir -p /conf /data \
+ && chmod 777 /conf /data \
+ && mkdir -p /opt/android
 
+# 安装 Android SDK command‑line tools
+RUN curl -o /tmp/android-tools.zip "$ANDROID_COMMAND_LINE_TOOLS_URL" \
+ && unzip -d /opt/android /tmp/android-tools.zip \
+ && rm /tmp/android-tools.zip \
+ # 接受许可并安装平台工具
+ && yes | /opt/android/tools/bin/sdkmanager --sdk_root="$ANDROID_HOME" \
+      "platform-tools" "platforms;android-${ANDROID_PLATFORM_VERSION}"
 
+# 安装 fastlane
+RUN gem install fastlane
 
-COPY            "build-sample.conf" "/home/builder/build-sample.conf"
-
-# 复制并验证
+# 复制配置和脚本
+COPY build-sample.conf /home/build-sample.conf
 COPY entrypoint.sh /entrypoint.sh
-RUN ls -l /entrypoint.sh
+COPY google-services.json /conf/google-services.json
 
-# 转换换行并赋予权限
-RUN  chmod +x /entrypoint.sh
+# 确保 entrypoint.sh 可执行
+RUN chmod +x /entrypoint.sh
 
-# 设为容器入口脚本
 ENTRYPOINT ["/entrypoint.sh"]
-
-
-CMD             ["help"]
-
-
-
-
-
-
-RUN             useradd -m builder && \
-                mkdir -p "/opt/android" && \
-                chown builder "/opt/android" && \
-                mkdir -p "/conf" "/data" && chmod 777 "/conf" "/data"
-
-
-
- 
-
-
-
-
-
-                
-
-USER            builder
-
-RUN             curl "$ANDROID_COMMAND_LINE_TOOLS_URL" -o "/tmp/android-tools.zip"  && \
-                unzip -d "/opt/android" "/tmp/android-tools.zip"; rm -f "/tmp/android-tools.zip" && \
-                $ANDROID_ACCEPT_LICENSE | sdkmanager  --sdk_root="/opt/android/sdk" "platform-tools" "platforms;android-${ANDROID_PLATFORM_VERSION}"
-
-RUN             gem install --user-install fastlane
-
-
+CMD ["help"]
