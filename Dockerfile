@@ -29,22 +29,10 @@ RUN curl -fsSL "https://deb.nodesource.com/setup_20.x" | bash - && \
 
 RUN             npm -g install react-native-cli
 
-RUN             useradd -m builder && \
-                mkdir -p "/opt/android" && \
-                chown builder "/opt/android" && \
-                mkdir -p "/conf" "/data" && chmod 777 "/conf" "/data"
 
-USER            builder
 
-RUN             curl "$ANDROID_COMMAND_LINE_TOOLS_URL" -o "/tmp/android-tools.zip"  && \
-                unzip -d "/opt/android" "/tmp/android-tools.zip"; rm -f "/tmp/android-tools.zip" && \
-                $ANDROID_ACCEPT_LICENSE | sdkmanager  --sdk_root="/opt/android/sdk" "platform-tools" "platforms;android-${ANDROID_PLATFORM_VERSION}"
-
-RUN             gem install --user-install fastlane
 
 COPY            "build-sample.conf" "/home/builder/build-sample.conf"
-
- 
 
 # 复制并验证
 COPY entrypoint.sh /entrypoint.sh
@@ -58,3 +46,33 @@ ENTRYPOINT ["/entrypoint.sh"]
 
 
 CMD             ["help"]
+
+
+
+
+
+
+RUN             useradd -m builder && \
+                mkdir -p "/opt/android" && \
+                chown builder "/opt/android" && \
+                mkdir -p "/conf" "/data" && chmod 777 "/conf" "/data"
+
+
+
+ 
+
+
+
+
+
+                
+
+USER            builder
+
+RUN             curl "$ANDROID_COMMAND_LINE_TOOLS_URL" -o "/tmp/android-tools.zip"  && \
+                unzip -d "/opt/android" "/tmp/android-tools.zip"; rm -f "/tmp/android-tools.zip" && \
+                $ANDROID_ACCEPT_LICENSE | sdkmanager  --sdk_root="/opt/android/sdk" "platform-tools" "platforms;android-${ANDROID_PLATFORM_VERSION}"
+
+RUN             gem install --user-install fastlane
+
+
