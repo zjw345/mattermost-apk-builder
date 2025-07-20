@@ -44,11 +44,18 @@ RUN             gem install --user-install fastlane
 
 COPY            "build-sample.conf" "/home/builder/build-sample.conf"
 
-COPY            "entrypoint.sh" "/entrypoint.sh"
+# 安装 dos2unix（可选，处理 CRLF 换行）
+RUN apt-get update && apt-get install -y dos2unix
 
-RUN chmod +x "/entrypoint.sh"
+# 复制并验证
+COPY entrypoint.sh /entrypoint.sh
+RUN ls -l /entrypoint.sh
 
+# 转换换行并赋予权限
+RUN dos2unix /entrypoint.sh && chmod +x /entrypoint.sh
 
-ENTRYPOINT      ["/entrypoint.sh"]
+# 设为容器入口脚本
+ENTRYPOINT ["/entrypoint.sh"]
+
 
 CMD             ["help"]
