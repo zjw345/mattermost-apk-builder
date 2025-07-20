@@ -1,0 +1,4 @@
+output/
+keystore.jks
+build.conf
+*.apk
