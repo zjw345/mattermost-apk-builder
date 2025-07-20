@@ -1,0 +1,36 @@
+name: Build Mattermost APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Decode Secrets
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > keystore.jks
+          echo "${{ secrets.BUILD_CONF_BASE64 }}" | base64 -d > build.conf
+
+      - name: Build Docker Image
+        run: docker build -t mm-apk-builder .
+
+      - name: Run APK Build
+        run: |
+          mkdir -p output
+          docker run --rm \
+            -v ${{ github.workspace }}/build.conf:/conf/build.conf \
+            -v ${{ github.workspace }}/google-services.json:/conf/google-services.json \
+            -v ${{ github.workspace }}/keystore.jks:/conf/android-apk-signing.keystore \
+            -v ${{ github.workspace }}/output:/data \
+            mm-apk-builder build
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: built-apk
+          path: output/*.apk
