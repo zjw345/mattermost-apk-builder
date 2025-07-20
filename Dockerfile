@@ -51,7 +51,7 @@ COPY entrypoint.sh /entrypoint.sh
 RUN ls -l /entrypoint.sh
 
 # 转换换行并赋予权限
-RUN dos2unix /entrypoint.sh && chmod +x /entrypoint.sh
+RUN  chmod +x /entrypoint.sh
 
 # 设为容器入口脚本
 ENTRYPOINT ["/entrypoint.sh"]
