@@ -44,8 +44,7 @@ RUN             gem install --user-install fastlane
 
 COPY            "build-sample.conf" "/home/builder/build-sample.conf"
 
-# 安装 dos2unix（可选，处理 CRLF 换行）
-RUN apt-get update && apt-get install -y dos2unix
+ 
 
 # 复制并验证
 COPY entrypoint.sh /entrypoint.sh
