@@ -46,7 +46,7 @@ COPY            "build-sample.conf" "/home/builder/build-sample.conf"
 
 COPY            "entrypoint.sh" "/entrypoint.sh"
 
-RUN chmod +x /entrypoint.sh
+RUN chmod +x "/entrypoint.sh"
 
 
 ENTRYPOINT      ["/entrypoint.sh"]
